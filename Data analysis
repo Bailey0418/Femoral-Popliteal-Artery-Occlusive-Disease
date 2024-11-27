@@ -1,0 +1,26 @@
+library(readxl)
+setwd("D:/Project/241105股腘动脉闭塞症硕士论文/数据")
+data <- read_xls("论文数据整理.xls")
+
+library(dplyr)
+data <- data %>%
+  mutate(group = case_when(
+    substr(患者, 1, 1) == "E" ~ "ET",  # 如果首字母是 E，分组为 ET
+    substr(患者, 1, 1) == "B" ~ "BPS" # 如果首字母是 B，分组为 BPS
+  ))
+
+# 使用 recode() 来转化罗马数字
+data$Rutherford分级 <- recode(data$Rutherford分级,
+                                   "I" = "1", "i" = "1", "II" = "2", "III" = "3", "IV" = "4", "ＩＶ" = "4")
+
+data$Fontaine分期 <- recode(data$Fontaine分期,
+                                   "IIa" = "1", "IIb" = "2", "III" = "3", "IV" = "4", "lV" = "4")
+
+data$`TASC II主髂` <- recode(data$`TASC II主髂`,
+                                   "A" = "1", "B" = "2", "C" = "3", "D" = "4")
+
+ET_data <- data %>% filter(group == "ET")
+BPS_data <- data %>% filter(group == "BPS")
+#样本数不同且不符合正态分布
+wilcox_test_result <- wilcox.test(吸烟史 ~ group, data = data)
+print(wilcox_test_result)
