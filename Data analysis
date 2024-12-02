@@ -21,6 +21,44 @@ data$`TASC II主髂` <- recode(data$`TASC II主髂`,
 
 ET_data <- data %>% filter(group == "ET")
 BPS_data <- data %>% filter(group == "BPS")
-#样本数不同且不符合正态分布
+#判断连续变量是否正态分布，p值 > 0.05 表示数据服从正态分布
+shapiro.test(ET_data$`ICU停留时间（天）`)
+#符合正态分布
+
+#不符合正态分布
 wilcox_test_result <- wilcox.test(吸烟史 ~ group, data = data)
 print(wilcox_test_result)
+
+#分类变量（频数大于5）
+contingency_table <- table(data$group, data$hypertension)
+chi_test <- chisq.test(contingency_table)
+chi_test
+#分类变量（频数小于5）
+contingency_table <- table(data$group, data$hypertension)
+fisher_test <- fisher.test(contingency_table)
+fisher_test
+
+#绘制箱线图
+library(ggplot2)
+# 绘制箱线图
+library(ggpubr)
+ggplot(data, aes(x = group, y = 年龄, fill = group)) +
+  geom_boxplot() +                       # 绘制箱线图
+  geom_jitter(width = 0.2, alpha = 0.5) + # 添加数据点
+  labs(title = "Age Comparison between ET and BPS Groups", 
+       x = "Group", y = "Age") +
+  theme_minimal()+
+  scale_fill_manual(values = c("ET" = "black", "BPS" = "gray70"))
+#绘制分组柱形图
+# 按组别和 GLASS 分级生成计数
+count_data <- as.data.frame(table(raw_data$group, raw_data$GLASS_grade))
+colnames(count_data) <- c("group", "GLASS_grade", "count")
+print(count_data)
+ggplot(count_data, aes(x = GLASS_grade, y = count, fill = group)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(title = "Postoperative follow-up Distribution Between Groups", 
+       x = "Grade", 
+       y = "Count", 
+       fill = "Group") +
+  theme_minimal() +
+  scale_fill_manual(values = c("ET" = "black", "BPS" = "gray70"))
