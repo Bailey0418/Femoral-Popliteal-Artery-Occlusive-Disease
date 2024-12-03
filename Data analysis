@@ -51,7 +51,7 @@ ggplot(data, aes(x = group, y = 年龄, fill = group)) +
   scale_fill_manual(values = c("ET" = "black", "BPS" = "gray70"))
 #绘制分组柱形图
 # 按组别和 GLASS 分级生成计数
-count_data <- as.data.frame(table(raw_data$group, raw_data$GLASS_grade))
+count_data <- as.data.frame(table(data$group, data$GLASS_grade))
 colnames(count_data) <- c("group", "GLASS_grade", "count")
 print(count_data)
 ggplot(count_data, aes(x = GLASS_grade, y = count, fill = group)) +
