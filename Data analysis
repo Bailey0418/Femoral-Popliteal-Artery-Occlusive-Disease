@@ -1,6 +1,6 @@
 library(readxl)
 setwd("D:/Project/241105股腘动脉闭塞症硕士论文/数据")
-data <- read_xls("论文数据整理.xls")
+data <- read_xls("论文数据.xls")
 
 library(dplyr)
 data <- data %>%
@@ -24,7 +24,10 @@ BPS_data <- data %>% filter(group == "BPS")
 #判断连续变量是否正态分布，p值 > 0.05 表示数据服从正态分布
 shapiro.test(ET_data$`ICU停留时间（天）`)
 #符合正态分布
-
+#判断方差
+var_test_result <- var.test(ET_data$`ABI(术前)`, ET_data$`ABI(术后)`)
+print(var_test_result)#p-value > 0.05认为两组方差相等
+t_test_result <- t.test(ET_data$`ABI(术前)`, ET_data$`ABI(术后)`, var.equal = FALSE)#方差相等，var.equal = T
 #不符合正态分布
 wilcox_test_result <- wilcox.test(吸烟史 ~ group, data = data)
 print(wilcox_test_result)
@@ -40,7 +43,6 @@ fisher_test
 
 #绘制箱线图
 library(ggplot2)
-# 绘制箱线图
 library(ggpubr)
 ggplot(data, aes(x = group, y = 年龄, fill = group)) +
   geom_boxplot() +                       # 绘制箱线图
@@ -61,4 +63,19 @@ ggplot(count_data, aes(x = GLASS_grade, y = count, fill = group)) +
        y = "Count", 
        fill = "Group") +
   theme_minimal() +
+  scale_fill_manual(values = c("ET" = "black", "BPS" = "gray70"))
+#绘制ABI术前/术后箱线图
+library(tidyr)
+data1 <- ET_data %>% select(`ABI(术前)`, `ABI(术后)`)
+colnames(data1)[1] <- "ABI_pre"
+colnames(data1)[2] <- "ABI_post"
+data_long <- data1 %>%
+  pivot_longer(cols = everything(), names_to = "time", values_to = "ABI")
+
+ggplot(data_long, aes(x = time, y = ABI, fill = time)) +
+  geom_boxplot() +                       # 绘制箱线图
+  geom_jitter(width = 0.2, alpha = 0.5) + # 添加数据点
+  labs(title = "ABI Comparison between Pre and Post Operative in ET Group ", 
+       x = "Group", y = "Score") +
+  theme_minimal()+
   scale_fill_manual(values = c("ET" = "black", "BPS" = "gray70"))
